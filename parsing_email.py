@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 import re
 
 from requests import api
-
+import time 
 
 
 #Объект Email 
@@ -27,19 +27,23 @@ class ParsingEmail:
         self.url = url
 
     def start(self): 
-        r = requests.get(self.url) 
-
-        bs = BeautifulSoup(r.content, 'html.parser')
-
-        if re.findall('.*?@', str(r.content)) :
-            self.mas_email = re.findall('\w+@\w+.\w+', str(r.content)) 
-            self.mas_email = set(self.mas_email) 
+        try: 
+            r = requests.get(self.url, timeout=3) 
             
+            bs = BeautifulSoup(r.content, 'html.parser')
+            
+            if re.findall('.*?@', str(r.content)) :
+                self.mas_email = re.findall('\w+@\w+.\w+', str(r.content)) 
+                self.mas_email = set(self.mas_email) 
+                
 
-        for email in self.mas_email: 
-            self.result_email.append(Email(email, self.url, self.url))
+            for email in self.mas_email: 
+                self.result_email.append(Email(email, self.url, self.url))
 
-        return self.result_email
+            return self.result_email
+
+        except: 
+            pass 
 
 
 print(ParsingEmail('https://www.karcher.ru/ru/servis/professional/servis_proftehniki_karcher.html').start()) 
