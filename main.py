@@ -9,7 +9,7 @@ db = DataBase('mydatabase.db')
 
 
 phrazes = [
-    'магазин одежды', 
+    #'магазин одежды', 
     # 'магазин мебели', 
     # 'магазин одежды с доставкой', 
     # 'книжный магазин', 
@@ -17,22 +17,20 @@ phrazes = [
     # 'магазин бытовой', 
     # 'спортивный магазин', 
     # 'купить огнетушитель', 
-    # 'огнетушитель оп купить', 
+    'огнетушитель оп купить', 
     # 'огнетушитель автомобильный купить', 
 ] 
 
 search_email = ParsingEmail
 
 
-def emails(urls ): 
-    for url in urls: 
-        for email in search_email(url).start(): 
-            print(email.name)
-
 def chunks(lst, chunk_size):
-        return [lst[i:i+chunk_size] for i in range(0, len(lst), chunk_size)]
+    return [lst[i:i+chunk_size] for i in range(0, len(lst), chunk_size)]
 
 
+def stack_email(mas):
+    for url in mas: 
+        print(search_email(url).start()) 
 
 
 
@@ -41,10 +39,17 @@ def chunks(lst, chunk_size):
 #     for site in yandex.sbor(phraze): 
 #         db.create_sites(site['url'],site['status'], site['date'])
 
-for row in db.select('Select * FROM sites'): 
-    for i in chunks(row, 10): 
-        thead = Thread(target= 'emails', args = i )
-        thead.start() 
+
+mas = [] 
+for rows in db.select('Select * FROM sites'): 
+    mas.append(rows[0])
+    print(search_email(rows[0]).start()) 
+
+for elem in chunks(mas, 10): 
+    thead = Thread(stack_email, args = (elem, ))
+    thead.start() 
+
+
 
       
             

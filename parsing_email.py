@@ -43,7 +43,7 @@ class ParsingEmail:
             return self.result_email
 
         except: 
-            pass 
+            return 
 
 
 print(ParsingEmail('https://www.karcher.ru/ru/servis/professional/servis_proftehniki_karcher.html').start()) 
