@@ -30,7 +30,7 @@ class ParsingSites:
     #сбор сайтов по всем фразам 10 страниц 
     def sbor(self, phraze):
         self.mas_sites = [] 
-        for page in range(0, 15): 
+        for page in range(0, 10): 
             self.sbor_page(phraze, page)
        
         return self.mas_sites 
@@ -53,6 +53,7 @@ class ParsingSites:
             data_elem['status'] = 'start'
             data_elem['date'] = date 
             self.mas_sites.append(data_elem)
+        
 
 
                          
