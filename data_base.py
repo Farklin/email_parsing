@@ -71,6 +71,10 @@ class DataBase:
         row = self.cursor.fetchall()
         return row
 
+    def sql_command(self, sql):
+        self.cursor.execute(sql)
+        row = self.cursor.fetchall()
+
 
 #DataBase('mydatabase.db').create_email('ivanhel@yandex.ru', 'первосоздатель', 'rost-seo', '15.06.2021')
 #DataBase('mydatabase.db').create_base_sites() 
