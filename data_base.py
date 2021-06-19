@@ -3,9 +3,10 @@ from sqlite3 import Error
 
 
 
+
 class DataBase:
 
-    def __init__(self, dbname): 
+    def __init__(self, dbname='mydatabase.db'): 
         self.dbname = dbname
         self.check_reatebase() 
          

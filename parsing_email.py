@@ -26,8 +26,8 @@ class ParsingEmail:
             
             bs = BeautifulSoup(r.content, 'html.parser')
     
-            if re.findall('\w+@\w+.\w+', str(bs.select('body')[0].text)) :
-                self.mas_email = re.findall('\w+@\w+.\w+', str(bs.select('body')[0].text)) 
+            if re.findall('([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)', str(bs.select('body')[0].text)) :
+                self.mas_email = re.findall('([a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+)', str(bs.select('body')[0].text)) 
                 self.mas_email = set(self.mas_email) 
             
             

@@ -7,8 +7,6 @@ from threading import Thread
 import math 
 from tqdm import tqdm
 import time 
-
-
 # db = DataBase('mydatabase.db')
 # db.create_base_email()
 # db.create_base_sites() 
@@ -34,7 +32,7 @@ import time
 # for rows in db.select('select * From email'): 
 #     print(rows[0])      
 
-class Main: 
+class MainF: 
 
     def __init__(self): 
         self.phrazes = [] 
@@ -69,8 +67,6 @@ class Main:
             thead = Thread(target = self.parsing_stack_emails, args=(stack_sites, ))
             thead.start()
 
-
-
     def parsing_stack_emails(self, sites): 
         for site in sites: 
             if ParsingEmail(site[0]).start(): 
@@ -81,18 +77,18 @@ class Main:
         
                         
 
-phrazes = ['детский интернет магазин', 
-'магазин продуктов', 
-'магазин техники', 
-'ювелирный магазин', 
-'магазин косметики', 
-'магазин запчастей', 
-'часы магазин', 
-'онлайн магазины', 
-'спортивный магазин', 
-'магазин игрушек', ]
+# phrazes = ['детский интернет магазин', 
+# 'магазин продуктов', 
+# 'магазин техники', 
+# 'ювелирный магазин', 
+# 'магазин косметики', 
+# 'магазин запчастей', 
+# 'часы магазин', 
+# 'онлайн магазины', 
+# 'спортивный магазин', 
+# 'магазин игрушек', ]
 
 
-main = Main()
-main.get_prazhes(phrazes)
-main.parsing_extradition()
+# main = Main()
+# main.get_prazhes(phrazes)
+# main.parsing_extradition()
