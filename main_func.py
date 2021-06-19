@@ -62,10 +62,15 @@ class MainF:
                 yield e_c
 
         sites = self.db.select('Select * From sites where status ="start"') 
-
+        theads = [] 
         for stack_sites in func_chunks_num(sites, 4): 
             thead = Thread(target = self.parsing_stack_emails, args=(stack_sites, ))
             thead.start()
+            theads.append(thead)
+        
+        for thead in theads: 
+            thead.join() 
+
 
     def parsing_stack_emails(self, sites): 
         for site in sites: 
