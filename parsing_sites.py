@@ -34,8 +34,7 @@ class ParsingSites:
             self.sbor_page(phraze, page)
        
         return self.mas_sites 
-
-
+    
     #сбор страницы сайтов органической выдачи 
     def sbor_page(self, phraze, page): 
 
@@ -45,15 +44,16 @@ class ParsingSites:
         bs = BeautifulSoup( self.driver.page_source, 'html.parser') 
 
         for val, vidacha in enumerate(bs.select('.Organic>.OrganicTitle>.Link ')): 
-            today = datetime.datetime.today()
-            date = today.strftime("%Y-%m-%d-%H.%M.%S")
+            if 'http' in vidacha.get('href'): 
+                today = datetime.datetime.today()
+                date = today.strftime("%Y-%m-%d-%H.%M.%S")
 
-            data_elem = dict()
-            data_elem['url'] = vidacha.get('href')
-            data_elem['status'] = 'start'
-            data_elem['date'] = date 
-            self.mas_sites.append(data_elem)
-        
+                data_elem = dict()
+                data_elem['url'] = vidacha.get('href')
+                data_elem['status'] = 'start'
+                data_elem['date'] = date 
+                self.mas_sites.append(data_elem)
+            
 
 
                          

@@ -16,12 +16,32 @@ class Ui(QtWidgets.QMainWindow, Form):
         self.fill_table() 
         self.btn_start.clicked.connect(self.start)
         self.btn_refresh.clicked.connect(self.refresh_table)
-    
+        self.btn_next.clicked.connect(self.next_parsing_emails)
+        self.btn_export.clicked.connect(self.main_function.export_excle_email)
+
+
     def start(self): 
+
         self.set_phrazes() 
+        self.main_function.finished = False 
         self.main_function.parsing_all()
 
-    
+
+    #статусы кнопок
+    def status_btn(self):
+        sites = self.db.select("SELECT * FROM sites where status='start'")
+        if len(sites) > 0: 
+            self.btn_next.setEnabled(True)
+        else: 
+            self.btn_next.setEnabled(False)
+        
+
+    # продолжить сбор email адресов
+    def next_parsing_emails(self): 
+        self.main_function.finished = False 
+        self.main_function.parsing_emails()
+        self.status_btn() 
+
     def refresh_table(self): 
        self.fill_table() 
         
@@ -37,7 +57,6 @@ class Ui(QtWidgets.QMainWindow, Form):
         for row, stroka in enumerate(rows):
             for column, cell in enumerate(stroka):  
                 self.table_emails.setItem(row,column, QtWidgets.QTableWidgetItem(cell))
-
 
     def set_phrazes(self):
         phrazes = self.plain_text_edit_phrazes.toPlainText().split('\n')

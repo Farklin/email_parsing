@@ -2,35 +2,11 @@ from soupsieve import select
 from parsing_email import ParsingEmail 
 from parsing_sites import ParsingSites 
 from data_base import DataBase 
-
+from export_excel import ExportExcel 
 from threading import Thread
 import math 
 from tqdm import tqdm
 import time 
-# db = DataBase('mydatabase.db')
-# db.create_base_email()
-# db.create_base_sites() 
-
-
-
-
-# def sbor(phraze): 
-
-#     for site in tqdm(ParsingSites().sbor(phraze)): 
-#         if len(db.select('select * From sites WHERE url="' +site['url']+ '"')) < 1:
-#             db.create_sites(site['url'], site['status'], '16.06.2021')
-#             if ParsingEmail(site['url']).start(): 
-#                 for email in ParsingEmail(site['url']).start(): 
-#                     db.create_email(email['email'], email['source'], site['url'], '16.06.2021')
-
-
-# for phraze in phrazes: 
-#     thead = Thread(target = sbor, args=(phraze, ))
-#     thead.start()
-#     time.sleep(4 * 10)
-
-# for rows in db.select('select * From email'): 
-#     print(rows[0])      
 
 class MainF: 
 
@@ -39,9 +15,10 @@ class MainF:
         self.finished = False 
         self.db = DataBase('mydatabase.db') 
 
+    #Ввод фраз на парсинг 
     def get_prazhes(self, phrazes):
         self.phrazes = phrazes 
-     
+    #парсинг выдачи по фразам 
     def parsing_extradition(self): 
         
         for phraze in self.phrazes: 
@@ -61,21 +38,24 @@ class MainF:
         
         self.finished = True 
 
-
+    #парсинг сайтов нахождение email адресов 
     def parsing_emails(self):
 
+        #разбиение массива на n частей 
+        def func_chunks_num(lst, c_num):
+            n = math.ceil(len(lst) / c_num)
+
+            for x in range(0, len(lst), n):
+                e_c = lst[x : n + x]
+
+                if len(e_c) < n:
+                    e_c = e_c + [None for y in range(n - len(e_c))]
+                yield e_c
+
+       
+
         while self.finished == False: 
-            #разбиение массива на n частей 
-            def func_chunks_num(lst, c_num):
-                n = math.ceil(len(lst) / c_num)
-
-                for x in range(0, len(lst), n):
-                    e_c = lst[x : n + x]
-
-                    if len(e_c) < n:
-                        e_c = e_c + [None for y in range(n - len(e_c))]
-                    yield e_c
-
+            
             sites = self.db.select('Select * From sites where status ="start"') 
             theads = [] 
 
@@ -87,23 +67,28 @@ class MainF:
                 
                 for thead in theads: 
                     thead.join() 
-
+        
+    #парсин сайтов и email в 2 поточном режиме 
     def parsing_all(self):
         if(len(self.phrazes)) > 0: 
             thead_parsing_extradition = Thread(target = self.parsing_extradition) 
             thead_parsing_extradition.start()
             thead_parsing_eamils = Thread(target = self.parsing_emails) 
             thead_parsing_eamils.start() 
-            
-
+    
+    #парсинг массива сайтов для поточного режима
     def parsing_stack_emails(self, sites): 
         for site in sites: 
+            print(site[0])
             if ParsingEmail(site[0]).start(): 
                 for email in ParsingEmail(site[0]).start(): 
                     self.db.create_email(email['email'], email['source'], site[0], '16.06.2021')
 
             self.db.sql_command('UPDATE sites set status = "finished" where url = "' +site[0]+ '"')
-        
+
+    def export_excle_email(self):
+        ExportExcel(self.db).export_emails() 
+
                         
 
 # phrazes = ['детский интернет магазин', 
