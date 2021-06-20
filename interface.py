@@ -19,8 +19,8 @@ class Ui(QtWidgets.QMainWindow, Form):
     
     def start(self): 
         self.set_phrazes() 
-        self.main_function.parsing_extradition()
-        self.main_function.parsing_emails()
+        self.main_function.parsing_all()
+
     
     def refresh_table(self): 
        self.fill_table() 

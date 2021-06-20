@@ -36,41 +36,65 @@ class MainF:
 
     def __init__(self): 
         self.phrazes = [] 
-
+        self.finished = False 
         self.db = DataBase('mydatabase.db') 
 
     def get_prazhes(self, phrazes):
         self.phrazes = phrazes 
-
+     
     def parsing_extradition(self): 
+        
         for phraze in self.phrazes: 
+
+            #завершение программы
+            if self.finished == True: 
+                    break 
+                    
+
             for site in tqdm(ParsingSites().sbor(phraze)): 
                 if len(self.db.select('select * From sites WHERE url="' +site['url']+ '"')) < 1:
                     self.db.create_sites(site['url'], site['status'], '16.06.2021')
-            self.parsing_emails()
+
+                #завершение программы
+                if self.finished == True: 
+                    break 
+        
+        self.finished = True 
+
 
     def parsing_emails(self):
-        #разбиение массива на n частей 
-        def func_chunks_num(lst, c_num):
-            n = math.ceil(len(lst) / c_num)
 
-            for x in range(0, len(lst), n):
-                e_c = lst[x : n + x]
+        while self.finished == False: 
+            #разбиение массива на n частей 
+            def func_chunks_num(lst, c_num):
+                n = math.ceil(len(lst) / c_num)
 
-                if len(e_c) < n:
-                    e_c = e_c + [None for y in range(n - len(e_c))]
-                yield e_c
+                for x in range(0, len(lst), n):
+                    e_c = lst[x : n + x]
 
-        sites = self.db.select('Select * From sites where status ="start"') 
-        theads = [] 
-        for stack_sites in func_chunks_num(sites, 4): 
-            thead = Thread(target = self.parsing_stack_emails, args=(stack_sites, ))
-            thead.start()
-            theads.append(thead)
-        
-        for thead in theads: 
-            thead.join() 
+                    if len(e_c) < n:
+                        e_c = e_c + [None for y in range(n - len(e_c))]
+                    yield e_c
 
+            sites = self.db.select('Select * From sites where status ="start"') 
+            theads = [] 
+
+            if len(sites) > 0: 
+                for stack_sites in func_chunks_num(sites, 4): 
+                    thead = Thread(target = self.parsing_stack_emails, args=(stack_sites, ))
+                    thead.start()
+                    theads.append(thead)
+                
+                for thead in theads: 
+                    thead.join() 
+
+    def parsing_all(self):
+        if(len(self.phrazes)) > 0: 
+            thead_parsing_extradition = Thread(target = self.parsing_extradition) 
+            thead_parsing_extradition.start()
+            thead_parsing_eamils = Thread(target = self.parsing_emails) 
+            thead_parsing_eamils.start() 
+            
 
     def parsing_stack_emails(self, sites): 
         for site in sites: 

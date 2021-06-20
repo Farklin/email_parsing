@@ -41,7 +41,7 @@ class ParsingSites:
 
         self.driver.get('https://yandex.ru/search/?text='+str(phraze)+'&lr=213&p='+str(page))
                 
-        time.sleep(3)
+        time.sleep(5)
         bs = BeautifulSoup( self.driver.page_source, 'html.parser') 
 
         for val, vidacha in enumerate(bs.select('.Organic>.OrganicTitle>.Link ')): 
