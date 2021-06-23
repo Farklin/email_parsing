@@ -1,7 +1,10 @@
-from PyQt5 import uic, QtWidgets 
-from main_func import MainF 
-from data_base import DataBase 
 
+from PyQt5 import uic, QtWidgets 
+from model.models import ModelEmail, ModelSite
+from libray.export_excel import ExportExcel
+from controller.controllers import ControllerColectingSites
+from threading import Thread
+from PyQt5.QtCore import QThread, pyqtSignal
 
 Form, _ = uic.loadUiType("untitled.ui")
 
@@ -11,58 +14,59 @@ class Ui(QtWidgets.QMainWindow, Form):
         super(Ui, self).__init__() 
         self.setupUi(self)
 
-        self.main_function = MainF() 
+        self.main_function = ControllerColectingSites() 
 
         self.fill_table() 
         self.btn_start.clicked.connect(self.start)
-        self.btn_refresh.clicked.connect(self.refresh_table)
+        self.btn_finish.clicked.connect(self.stop)
+        self.btn_refresh.clicked.connect(self.fill_table)
         self.btn_next.clicked.connect(self.next_parsing_emails)
-        self.btn_export.clicked.connect(self.main_function.export_excle_email)
+        #self.btn_export.clicked.connect(self.main_function.export_excle_email)
 
+        
 
-    def start(self): 
+    def start(self):
+        self.main_function.finished = True
+        self.main_function.finished = False 
 
         self.set_phrazes() 
-        self.main_function.finished = False 
-        self.main_function.parsing_all()
+        self.main_function.start()
 
+        self.btn_start.setEnabled(False)
+        
+    def stop(self): 
+        self.main_function.finished = True
+        self.btn_start.setEnabled(True)
 
     #статусы кнопок
     def status_btn(self):
-        sites = self.db.select("SELECT * FROM sites where status='start'")
-        if len(sites) > 0: 
-            self.btn_next.setEnabled(True)
-        else: 
-            self.btn_next.setEnabled(False)
+        pass
         
-
     # продолжить сбор email адресов
     def next_parsing_emails(self): 
-        self.main_function.finished = False 
-        self.main_function.parsing_emails()
-        self.status_btn() 
-
-    def refresh_table(self): 
-       self.fill_table() 
-        
+        pass
+    
+    #заполнить таблицу 
     def fill_table(self): 
+        '''Запрашивает у базы данных значения из таблицы emails, после чего осуществляет заполнение таблицы формы ''' 
         self.table_emails.setRowCount(0)
-        db = DataBase() 
-        row = db.select("SELECT * FROM email LIMIT 1")
-        self.table_emails.setColumnCount(len(row[0]))
+        db = ModelEmail() 
+        #row = db.select("select * from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME='emails'")
+        self.table_emails.setColumnCount(4)
 
-        rows = db.select("SELECT * FROM email")
+        rows = db.select("SELECT * FROM emails")
         self.table_emails.setRowCount(len(rows))
 
         for row, stroka in enumerate(rows):
             for column, cell in enumerate(stroka):  
                 self.table_emails.setItem(row,column, QtWidgets.QTableWidgetItem(cell))
 
+    #фразы для поиска email 
     def set_phrazes(self):
-        phrazes = self.plain_text_edit_phrazes.toPlainText().split('\n')
-        self.main_function.get_prazhes(phrazes)
-        
-
+        if self.plain_text_edit_phrazes.toPlainText() != '': 
+            phrazes = self.plain_text_edit_phrazes.toPlainText().split('\n')
+            self.main_function.set_phrazes(phrazes)
+            
 
 if __name__ ==  "__main__": 
     import sys 
@@ -71,5 +75,3 @@ if __name__ ==  "__main__":
     w = Ui() 
     w.show() 
     sys.exit(app.exec_())
-
-   

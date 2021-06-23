@@ -1,0 +1,125 @@
+from time import sleep
+from PyQt5.uic.properties import float_list
+from libray.parsing_email import ParsingEmail 
+from libray.parsing_site import ParsingSite
+from threading import Thread
+from model.models import ModelSite, ModelEmail
+import math
+class ControllerColectingSites: 
+
+    def __init__(self):
+        self.data_phrazes = [] 
+        self.data_sites = [] 
+        self.data_emails = []  
+        self.queue_sites = [] 
+
+        self.parsng_site = ParsingSite
+        self.parsing_email = ParsingEmail 
+        
+        self.parsng_site_status = True
+        self.parsng_email_status = True
+
+        self.finished = False 
+
+    def set_phrazes(self, phrazes):
+        self.data_phrazes = phrazes  
+
+    def start(self): 
+
+        trhead_queue_sites = Thread(target=self.queue_save_sites)
+        trhead_queue_sites.start()
+
+        trhead_queue_emails= Thread(target=self.queue_save_emails)
+        trhead_queue_emails.start()
+
+        trhead_site = Thread(target=self.parsing_extdition)
+        trhead_site.start() 
+            
+        trhead_emails = Thread(target=self.parsing_emails)
+        trhead_emails.start() 
+
+        trhead_queue_view = Thread(target=self.queue_view)
+        trhead_queue_view.start() 
+        
+    def parsing_extdition(self): 
+        if len(self.data_phrazes) > 0: 
+            for phraze in self.data_phrazes: 
+                if self.finished == False: 
+                    data = self.parsng_site().sbor(phraze)
+                    self.data_sites += data
+
+        self.parsng_site_status = False 
+
+        #если очередь пустая то процесс сбора sites завершен 
+        
+    def parsing_emails(self): 
+
+        def func_chunks_num(lst, c_num):
+            n = math.ceil(len(lst) / c_num)
+
+            for x in range(0, len(lst), n):
+                e_c = lst[x : n + x]
+
+                if len(e_c) < n:
+                    e_c = e_c + [None for y in range(n - len(e_c))]
+                yield e_c
+
+
+        while self.finished==False: 
+            
+            if len(self.queue_sites) > 0: 
+                self.parsng_email_status = True
+                theads = [] 
+                for stack_sites in func_chunks_num(self.queue_sites, 4): 
+                    thead = Thread(target = self.parsing_email_thead, args=(stack_sites, ))
+                    thead.start()
+                    theads.append(thead)
+
+                for thead in theads: 
+                    thead.join() 
+
+            else: 
+                self.parsng_email_status = False
+
+    def parsing_email_thead(self, stack_sites):
+        for site in stack_sites: 
+            self.data_emails += self.parsing_email(site).start()
+            self.queue_sites.remove(site) 
+
+
+    #очередь на добавление в базу данных сайтов 
+    def queue_save_sites(self): 
+        while self.finished == False: 
+            if len(self.data_sites) > 0: 
+                for site in self.data_sites: 
+                    ModelSite().write(site['url'], site['status'], site['date'])
+                    self.data_sites.remove(site)
+            
+            rows = ModelSite().select('SELECT * FROM sites WHERE status = "start" ')
+            if len(rows) > 0: 
+
+                for row in rows: 
+                    self.queue_sites.append(row[0]) 
+                    ModelSite().query("UPDATE sites SET status='finished' WHERE url = '" +row[0] + "'") 
+
+    def queue_save_emails(self): 
+        while self.finished == False: 
+            if len(self.data_emails) > 0: 
+                for email in self.data_emails: 
+                    ModelEmail().write(email['email'], email['source'], email['domain'], '22.06.2021')
+                    self.data_emails.remove(email)
+
+    def queue_view(self): 
+        while self.finished == False: 
+            sleep(10)
+            print(len(self.queue_sites), self.parsng_email_status, self.parsng_site_status, self.finished ) 
+
+            #если очереди пустые завершаем все действия 
+            if self.parsng_email_status == False and self.parsng_site_status == False: 
+                self.finished = True
+            
+            
+    def save(self): 
+        pass 
+
+    

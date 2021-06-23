@@ -1,9 +1,6 @@
-from re import S
 import requests
 from bs4 import BeautifulSoup
 from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.common.exceptions import StaleElementReferenceException
 from bs4 import BeautifulSoup as BS
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager import driver
@@ -11,13 +8,11 @@ from webdriver_manager.chrome import ChromeDriverManager
 import time 
 import urllib
 from selenium.webdriver.common.keys import Keys
-import os
 import datetime 
 from tqdm import tqdm
-import openpyxl
 
 
-class ParsingSites: 
+class ParsingSite: 
 
 
     def __init__(self): 
@@ -40,7 +35,7 @@ class ParsingSites:
 
         self.driver.get('https://yandex.ru/search/?text='+str(phraze)+'&lr=213&p='+str(page))
                 
-        time.sleep(5)
+        time.sleep(15)
         bs = BeautifulSoup( self.driver.page_source, 'html.parser') 
 
         for val, vidacha in enumerate(bs.select('.Organic>.OrganicTitle>.Link ')): 
@@ -53,8 +48,5 @@ class ParsingSites:
                 data_elem['status'] = 'start'
                 data_elem['date'] = date 
                 self.mas_sites.append(data_elem)
-            
 
-
-                         
 
