@@ -1,3 +1,4 @@
+from os import remove
 from time import sleep
 from PyQt5.uic.properties import float_list
 from libray.parsing_email import ParsingEmail 
@@ -123,3 +124,66 @@ class ControllerColectingSites:
         pass 
 
     
+class QueueEmail: 
+
+    def __init__(self, emails_save = []) -> None:
+
+
+        ''' класс потка очереди для обработки данных email в базе данных 
+
+        параметры 
+        emails_save - хранит данные для записи в базу данных 
+    
+        ''' 
+
+        self.emails_save = emails_save 
+        self.finished = False
+
+    def save_database(self):
+
+        '''принимает массив формата elem словаря со значениями email, source, domain для записи в базу данных '''
+
+        for email in self.emails_save: 
+            ModelEmail().write(email['email'], email['source'], email['domain'], '22.06.2021')
+            self.emails_save.remove(email)
+                
+                
+class QueueSite: 
+    
+    def __init__(self) -> None:
+        
+        ''' класс потка очереди для обработки site в базе данных 
+
+            параметры 
+            site_save - хранит данные для записи в базу данных 
+            site_update - хранит данные для обновление статуса в базе данных
+            site_queue - хранит данные очереди сайты чей статус является start 
+        
+         ''' 
+
+        self.site_save = []
+        self.site_update = []
+        self.site_queue = []
+        self.finished = False
+
+    def save_database(self):
+
+        '''принимает массив формата elem словаря со значениями url, status, date для записи в базу данных '''
+
+        if len(self.site_save) > 0: 
+            for site in self.site_save: 
+                ModelSite().write(site['url'], site['status'], site['date'])
+                self.site_save.remove(site)
+    
+    def update_status(self):
+        '''принимает одномерный массив списко url адресов для изменение статуса на finished'''
+
+
+        for site in self.save_update: 
+            ModelSite().query("UPDATE sites SET status='finished' WHERE url = '" +site+ "'")
+            self.site_update.remove(site)
+
+    def queue(self): 
+        ''' формирует очередь на обработку ''' 
+        self.site_queue = ModelSite().select('SELECT * FROM sites WHERE status = "start" ')
+

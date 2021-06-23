@@ -1,5 +1,6 @@
 
-from PyQt5 import uic, QtWidgets 
+from PyQt5 import uic, QtWidgets
+from PyQt5.uic.properties import float_list 
 from model.models import ModelEmail, ModelSite
 from libray.export_excel import ExportExcel
 from controller.controllers import ControllerColectingSites
@@ -23,7 +24,8 @@ class Ui(QtWidgets.QMainWindow, Form):
         self.btn_next.clicked.connect(self.next_parsing_emails)
         #self.btn_export.clicked.connect(self.main_function.export_excle_email)
 
-        
+        self.loading_animation() 
+
 
     def start(self):
         self.main_function.finished = True
@@ -33,7 +35,13 @@ class Ui(QtWidgets.QMainWindow, Form):
         self.main_function.start()
 
         self.btn_start.setEnabled(False)
+
+
+    def loading_animation(self): 
+        while self.main_function.finished == False: 
+            self.label_queue_sites.text(self.self.main_function.queue_sites) 
         
+
     def stop(self): 
         self.main_function.finished = True
         self.btn_start.setEnabled(True)
