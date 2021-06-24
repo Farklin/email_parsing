@@ -39,7 +39,7 @@ class Ui(QtWidgets.QMainWindow, Form):
 
     def loading_animation(self): 
         while self.main_function.finished == False: 
-            self.label_queue_sites.text(self.self.main_function.queue_sites) 
+            self.label_queue_sites.text(self.self.main_function.queue_sites)
         
 
     def stop(self): 

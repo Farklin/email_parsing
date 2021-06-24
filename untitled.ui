@@ -20,7 +20,7 @@
       <x>520</x>
       <y>10</y>
       <width>261</width>
-      <height>501</height>
+      <height>491</height>
      </rect>
     </property>
     <property name="title">
@@ -75,18 +75,72 @@
       <string>Продолжить</string>
      </property>
     </widget>
-    <widget class="QProgressBar" name="progressBar">
+    <widget class="QGroupBox" name="groupBox_2">
      <property name="geometry">
       <rect>
-       <x>20</x>
-       <y>380</y>
-       <width>231</width>
-       <height>23</height>
+       <x>10</x>
+       <y>370</y>
+       <width>241</width>
+       <height>111</height>
       </rect>
      </property>
-     <property name="value">
-      <number>24</number>
+     <property name="title">
+      <string>Статистика</string>
      </property>
+     <widget class="QWidget" name="formLayoutWidget">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>20</y>
+        <width>201</width>
+        <height>80</height>
+       </rect>
+      </property>
+      <layout class="QFormLayout" name="formLayout">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Контактов найдено:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Обработано:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>В очереди:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLabel" name="label_count_email">
+         <property name="text">
+          <string>0</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLabel" name="label_count_site">
+         <property name="text">
+          <string>0</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QLabel" name="label_queue_sites">
+         <property name="text">
+          <string>0</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
     </widget>
    </widget>
    <widget class="QPushButton" name="btn_export">
@@ -121,7 +175,7 @@
       <x>30</x>
       <y>50</y>
       <width>481</width>
-      <height>471</height>
+      <height>451</height>
      </rect>
     </property>
    </widget>
@@ -145,12 +199,22 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>21</height>
+     <height>19</height>
     </rect>
    </property>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
+ <tabstops>
+  <tabstop>btn_export</tabstop>
+  <tabstop>plain_text_edit_phrazes</tabstop>
+  <tabstop>btn_next</tabstop>
+  <tabstop>btn_start</tabstop>
+  <tabstop>btn_clean</tabstop>
+  <tabstop>table_emails</tabstop>
+  <tabstop>btn_refresh</tabstop>
+  <tabstop>btn_finish</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

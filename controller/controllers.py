@@ -6,20 +6,16 @@ from libray.parsing_site import ParsingSite
 from threading import Thread
 from model.models import ModelSite, ModelEmail
 import math
+
+
 class ControllerColectingSites: 
 
-    def __init__(self):
-        self.data_phrazes = [] 
-        self.data_sites = [] 
-        self.data_emails = []  
-        self.queue_sites = [] 
+    def __init__(self, phrazes):
+
+        self.phrazes = phrazes
+        self.save_site = [] 
 
         self.parsng_site = ParsingSite
-        self.parsing_email = ParsingEmail 
-        
-        self.parsng_site_status = True
-        self.parsng_email_status = True
-
         self.finished = False 
 
     def set_phrazes(self, phrazes):
@@ -27,32 +23,36 @@ class ControllerColectingSites:
 
     def start(self): 
 
-        trhead_queue_sites = Thread(target=self.queue_save_sites)
-        trhead_queue_sites.start()
-
-        trhead_queue_emails= Thread(target=self.queue_save_emails)
-        trhead_queue_emails.start()
-
         trhead_site = Thread(target=self.parsing_extdition)
         trhead_site.start() 
-            
-        trhead_emails = Thread(target=self.parsing_emails)
-        trhead_emails.start() 
 
-        trhead_queue_view = Thread(target=self.queue_view)
-        trhead_queue_view.start() 
-        
     def parsing_extdition(self): 
-        if len(self.data_phrazes) > 0: 
-            for phraze in self.data_phrazes: 
-                if self.finished == False: 
-                    data = self.parsng_site().sbor(phraze)
-                    self.data_sites += data
+        try: 
+            if len(self.phrazes) > 0: 
+                for phraze in self.phrazes: 
+                    if self.finished == False: 
+                        data = self.parsng_site().sbor(phraze)
+                        self.save_site += data
+                self.finished = False 
+        except: 
+            self.finished = True 
+      
+    def save(self): 
+        pass 
 
-        self.parsng_site_status = False 
-
-        #если очередь пустая то процесс сбора sites завершен 
+class ControllerColectingEmails:
         
+    def __init__(self):
+
+        self.site_queue = [] 
+        self.site_update = [] 
+
+        self.save_emails = []  
+
+        self.finished = False 
+
+        self.parsing_email = ParsingEmail
+
     def parsing_emails(self): 
 
         def func_chunks_num(lst, c_num):
@@ -68,10 +68,9 @@ class ControllerColectingSites:
 
         while self.finished==False: 
             
-            if len(self.queue_sites) > 0: 
-                self.parsng_email_status = True
+            if len(self.site_queue) > 0: 
                 theads = [] 
-                for stack_sites in func_chunks_num(self.queue_sites, 4): 
+                for stack_sites in func_chunks_num(self.site_queue, 4): 
                     thead = Thread(target = self.parsing_email_thead, args=(stack_sites, ))
                     thead.start()
                     theads.append(thead)
@@ -84,46 +83,14 @@ class ControllerColectingSites:
 
     def parsing_email_thead(self, stack_sites):
         for site in stack_sites: 
-            self.data_emails += self.parsing_email(site).start()
-            self.queue_sites.remove(site) 
+            self.save_emails += self.parsing_email(site).start()
+            self.site_queue.remove(site)
+            self.site_update.append(site['url'])
+       
+    def start(self): 
+        trhead_emails = Thread(target=self.parsing_emails)
+        trhead_emails.start() 
 
-
-    #очередь на добавление в базу данных сайтов 
-    def queue_save_sites(self): 
-        while self.finished == False: 
-            if len(self.data_sites) > 0: 
-                for site in self.data_sites: 
-                    ModelSite().write(site['url'], site['status'], site['date'])
-                    self.data_sites.remove(site)
-            
-            rows = ModelSite().select('SELECT * FROM sites WHERE status = "start" ')
-            if len(rows) > 0: 
-
-                for row in rows: 
-                    self.queue_sites.append(row[0]) 
-                    ModelSite().query("UPDATE sites SET status='finished' WHERE url = '" +row[0] + "'") 
-
-    def queue_save_emails(self): 
-        while self.finished == False: 
-            if len(self.data_emails) > 0: 
-                for email in self.data_emails: 
-                    ModelEmail().write(email['email'], email['source'], email['domain'], '22.06.2021')
-                    self.data_emails.remove(email)
-
-    def queue_view(self): 
-        while self.finished == False: 
-            sleep(10)
-            print(len(self.queue_sites), self.parsng_email_status, self.parsng_site_status, self.finished ) 
-
-            #если очереди пустые завершаем все действия 
-            if self.parsng_email_status == False and self.parsng_site_status == False: 
-                self.finished = True
-            
-            
-    def save(self): 
-        pass 
-
-    
 class QueueEmail: 
 
     def __init__(self, emails_save = []) -> None:
@@ -142,11 +109,15 @@ class QueueEmail:
     def save_database(self):
 
         '''принимает массив формата elem словаря со значениями email, source, domain для записи в базу данных '''
-
-        for email in self.emails_save: 
-            ModelEmail().write(email['email'], email['source'], email['domain'], '22.06.2021')
-            self.emails_save.remove(email)
-                
+        while self.finished == False: 
+            for email in self.emails_save: 
+                ModelEmail().write(email['email'], email['source'], email['domain'], '22.06.2021')
+                self.emails_save.remove(email)
+        
+    def start(self):
+    
+        thead_save = Thread(target=self.save_database) 
+        thead_save.start()
                 
 class QueueSite: 
     
@@ -169,21 +140,76 @@ class QueueSite:
     def save_database(self):
 
         '''принимает массив формата elem словаря со значениями url, status, date для записи в базу данных '''
-
-        if len(self.site_save) > 0: 
-            for site in self.site_save: 
-                ModelSite().write(site['url'], site['status'], site['date'])
-                self.site_save.remove(site)
+        while self.finished == False: 
+            if len(self.site_save) > 0: 
+                for site in self.site_save: 
+                    ModelSite().write(site['url'], site['status'], site['date'])
+                    self.site_save.remove(site)
     
     def update_status(self):
         '''принимает одномерный массив списко url адресов для изменение статуса на finished'''
 
-
-        for site in self.save_update: 
-            ModelSite().query("UPDATE sites SET status='finished' WHERE url = '" +site+ "'")
-            self.site_update.remove(site)
+        while self.finished == False: 
+            if len(self.site_update) != 0: 
+                for site in self.site_update: 
+                    ModelSite().query("UPDATE sites SET status='finished' WHERE url = '" +site+ "'")
+                    self.site_update.remove(site)
 
     def queue(self): 
         ''' формирует очередь на обработку ''' 
-        self.site_queue = ModelSite().select('SELECT * FROM sites WHERE status = "start" ')
+        while self.finished == False: 
+            self.site_queue = ModelSite().select('SELECT * FROM sites WHERE status = "start" ')
+
+    def start(self):
+        while self.finished == False: 
+            self.save_database() 
+            self.update_status() 
+            self.queue() 
+
+
+class ControllerColecting: 
+    
+    def __init__(self, phraze) -> None:
+
+        self.ColectingSites = ControllerColectingSites(phraze)
+        self.ColectingEmails = ControllerColectingEmails
+
+        self.QueueEmail = QueueEmail() 
+        self.QueueSite = QueueSite() 
+
+        self.finished = False
+        
+    def exchange(self):
+        while self.finished == False: 
+            self.QueueSite.site_save = self.ColectingSites.save_site
+             
+    def stop(self): 
+        self.QueueEmail.finished = True 
+        self.QueueSite.finished = True 
+
+        self.ColectingSites.finished = True 
+        self.ColectingEmails.finished = True 
+        
+        self.finished = True 
+
+
+
+    def start(self):
+        # thead_QueueColectingSites =  Thread(target = self.ColectingSites.parsing_extdition, args = ())
+        # thead_QueueColectingSites.start() 
+
+        # thead_QueueSite = Thread(target = self.QueueSite.start, args = ()) 
+        # thead_QueueSite.start() 
+        
+        # thead_exchange = Thread(target=self.exchange)
+        # thead_exchange.start() 
+        print(self.ColectingSites.phrazes)
+        self.ColectingSites.parsing_extdition() 
+
+        
+
+
+
+
+
 

@@ -1,6 +1,6 @@
 from model.models import ModelEmail, ModelSite
 from libray.export_excel import ExportExcel
-from controller.controllers import ControllerColectingSites, QueueSite
+from controller.controllers import ControllerColectingSites, QueueSite, ControllerColectingEmails, ControllerColecting 
 
 
 
@@ -23,6 +23,5 @@ from controller.controllers import ControllerColectingSites, QueueSite
 #     print(row[0], row[1])
 
 
-sitequ = QueueSite()
-sitequ.queue()
-print(sitequ.site_queue) 
+newcollection =ControllerColecting(['новая фраза'])
+newcollection.start()
