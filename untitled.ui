@@ -111,7 +111,7 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="0">
+       <item row="3" column="0">
         <widget class="QLabel" name="label_3">
          <property name="text">
           <string>В очереди:</string>
@@ -126,14 +126,28 @@
         </widget>
        </item>
        <item row="1" column="1">
-        <widget class="QLabel" name="label_count_site">
+        <widget class="QLabel" name="label_processed_sites">
          <property name="text">
           <string>0</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="1">
+       <item row="3" column="1">
         <widget class="QLabel" name="label_queue_sites">
+         <property name="text">
+          <string>0</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_4">
+         <property name="text">
+          <string>Найдено сайтов</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QLabel" name="label_count_sites">
          <property name="text">
           <string>0</string>
          </property>
@@ -199,7 +213,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>19</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>

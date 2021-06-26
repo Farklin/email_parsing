@@ -29,8 +29,7 @@ class ParsingEmail:
             
 
             for email in self.mas_email: 
-                if not email.replace('@', '').replace('.', '').isdigit(): 
-                    if email.find('.png') == -1  and email.find('.jpg') == -1 and email.find('.gif') == -1: 
+                    if email.find('.png') == -1 and email.find('.webp') == -1    and email.find('.jpeg') == -1 and email.find('.jpg') == -1 and email.find('.gif') == -1: 
                         hostname = urlparse(self.url).hostname
                         self.result_email.append({'email':email, 
                                                 'source': self.url,

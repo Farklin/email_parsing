@@ -1,9 +1,10 @@
 
+from time import sleep
 from PyQt5 import uic, QtWidgets
 from PyQt5.uic.properties import float_list 
 from model.models import ModelEmail, ModelSite
 from libray.export_excel import ExportExcel
-from controller.controllers import ControllerColectingSites
+from controller.controllers import ControllerColectingSites, ControllerColecting
 from threading import Thread
 from PyQt5.QtCore import QThread, pyqtSignal
 
@@ -15,36 +16,47 @@ class Ui(QtWidgets.QMainWindow, Form):
         super(Ui, self).__init__() 
         self.setupUi(self)
 
-        self.main_function = ControllerColectingSites() 
+        self.main_function = ControllerColecting([]) 
 
         self.fill_table() 
         self.btn_start.clicked.connect(self.start)
         self.btn_finish.clicked.connect(self.stop)
         self.btn_refresh.clicked.connect(self.fill_table)
         self.btn_next.clicked.connect(self.next_parsing_emails)
-        #self.btn_export.clicked.connect(self.main_function.export_excle_email)
-
-        self.loading_animation() 
-
+        #self.btn_export.clicked.connect(self.main_function.export_excle_email) 
+        self.btn_finish.setEnabled(False)
+        
 
     def start(self):
-        self.main_function.finished = True
-        self.main_function.finished = False 
-
-        self.set_phrazes() 
-        self.main_function.start()
-
+        self.main_function.phraze = self.set_phrazes()
+        print(self.main_function.phraze)
+        self.main_function.start() 
         self.btn_start.setEnabled(False)
+        self.btn_finish.setEnabled(True)
 
+        thead_statistic = Thread(target=self.statistic)
+        thead_statistic.start() 
 
-    def loading_animation(self): 
-        while self.main_function.finished == False: 
-            self.label_queue_sites.text(self.self.main_function.queue_sites)
+    def statistic(self): 
+
+        while True: 
+            sleep(4)
+            self.queuesite = len(self.main_function.QueueSite.site_queue) 
+            self.label_queue_sites.setText(str(self.queuesite))
+
+            self.countsite = self.main_function.ColectingSites.count_site
+            self.label_count_sites.setText(str(self.countsite))
+
+            self.processed_site_count  = self.main_function.ColectingEmails.processed_site_count
+            self.label_processed_sites.setText(str(self.processed_site_count))
+
+            self.label_count_email.setText(str(self.main_function.ColectingEmails.processed_email_count))
         
 
     def stop(self): 
-        self.main_function.finished = True
+        self.main_function.stop()
         self.btn_start.setEnabled(True)
+        self.btn_finish.setEnabled(False)
 
     #статусы кнопок
     def status_btn(self):
@@ -73,7 +85,7 @@ class Ui(QtWidgets.QMainWindow, Form):
     def set_phrazes(self):
         if self.plain_text_edit_phrazes.toPlainText() != '': 
             phrazes = self.plain_text_edit_phrazes.toPlainText().split('\n')
-            self.main_function.set_phrazes(phrazes)
+            return phrazes
             
 
 if __name__ ==  "__main__": 

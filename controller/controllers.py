@@ -14,16 +14,16 @@ class ControllerColectingSites:
 
         self.phrazes = phrazes
         self.save_site = [] 
-
+        self.count_site = 0
         self.parsng_site = ParsingSite
         self.finished = False 
 
     def set_phrazes(self, phrazes):
-        self.data_phrazes = phrazes  
+        self.phrazes = phrazes  
 
     def start(self): 
 
-        trhead_site = Thread(target=self.parsing_extdition)
+        trhead_site = Thread(target=self.parsing_extdition, args=())
         trhead_site.start() 
 
     def parsing_extdition(self): 
@@ -33,6 +33,7 @@ class ControllerColectingSites:
                     if self.finished == False: 
                         data = self.parsng_site().sbor(phraze)
                         self.save_site += data
+                        self.count_site += len(data)
                 self.finished = False 
         except: 
             self.finished = True 
@@ -48,7 +49,8 @@ class ControllerColectingEmails:
         self.site_update = [] 
 
         self.save_emails = []  
-
+        self.processed_site_count = 0 
+        self.processed_email_count = 0 
         self.finished = False 
 
         self.parsing_email = ParsingEmail
@@ -70,7 +72,7 @@ class ControllerColectingEmails:
             
             if len(self.site_queue) > 0: 
                 theads = [] 
-                for stack_sites in func_chunks_num(self.site_queue, 4): 
+                for stack_sites in func_chunks_num(self.site_queue, 5): 
                     thead = Thread(target = self.parsing_email_thead, args=(stack_sites, ))
                     thead.start()
                     theads.append(thead)
@@ -83,9 +85,18 @@ class ControllerColectingEmails:
 
     def parsing_email_thead(self, stack_sites):
         for site in stack_sites: 
-            self.save_emails += self.parsing_email(site).start()
-            self.site_queue.remove(site)
-            self.site_update.append(site['url'])
+            try: 
+                self.site_queue.remove(site)
+                self.save_emails += self.parsing_email(site[0]).start()
+               
+                print(site)
+                self.site_update.append(site[0])
+               
+                self.processed_site_count += 1
+                self.processed_email_count += len(self.save_emails)
+               
+            except: 
+                pass 
        
     def start(self): 
         trhead_emails = Thread(target=self.parsing_emails)
@@ -161,18 +172,21 @@ class QueueSite:
             self.site_queue = ModelSite().select('SELECT * FROM sites WHERE status = "start" ')
 
     def start(self):
-        while self.finished == False: 
-            self.save_database() 
-            self.update_status() 
-            self.queue() 
+        thead_save_database = Thread(target=self.save_database)
+        thead_update_status = Thread(target=self.update_status)
+        thead_queue = Thread(target=self.queue)
 
+        thead_update_status.start() 
+        thead_save_database.start() 
+        thead_queue.start() 
 
 class ControllerColecting: 
     
     def __init__(self, phraze) -> None:
-
-        self.ColectingSites = ControllerColectingSites(phraze)
-        self.ColectingEmails = ControllerColectingEmails
+        
+        self.phraze = phraze
+        self.ColectingSites = ControllerColectingSites(self.phraze)
+        self.ColectingEmails = ControllerColectingEmails() 
 
         self.QueueEmail = QueueEmail() 
         self.QueueSite = QueueSite() 
@@ -181,8 +195,27 @@ class ControllerColecting:
         
     def exchange(self):
         while self.finished == False: 
-            self.QueueSite.site_save = self.ColectingSites.save_site
-             
+            
+            print(len(self.ColectingEmails.site_update))
+
+            self.QueueSite.site_update += self.ColectingEmails.site_update
+            
+
+            if (len(self.ColectingEmails.site_queue) == 0): 
+                self.ColectingEmails.site_queue = self.QueueSite.site_queue
+                self.QueueSite.site_queue = [] 
+
+            if len(self.ColectingSites.save_site) != 0: 
+                self.QueueSite.site_save += self.ColectingSites.save_site
+                self.ColectingSites.save_site = []
+            
+            if len(self.QueueEmail.emails_save) == 0: 
+                self.QueueEmail.emails_save += self.ColectingEmails.save_emails
+                self.ColectingEmails.save_emails = [] 
+
+            sleep(10)
+
+        
     def stop(self): 
         self.QueueEmail.finished = True 
         self.QueueSite.finished = True 
@@ -195,16 +228,16 @@ class ControllerColecting:
 
 
     def start(self):
-        # thead_QueueColectingSites =  Thread(target = self.ColectingSites.parsing_extdition, args = ())
-        # thead_QueueColectingSites.start() 
+                
+        self.ColectingSites.set_phrazes(self.phraze)
+        self.ColectingSites.start() 
+        self.ColectingEmails.start()
 
-        # thead_QueueSite = Thread(target = self.QueueSite.start, args = ()) 
-        # thead_QueueSite.start() 
+        self.QueueSite.start()
+        self.QueueEmail.start() 
         
-        # thead_exchange = Thread(target=self.exchange)
-        # thead_exchange.start() 
-        print(self.ColectingSites.phrazes)
-        self.ColectingSites.parsing_extdition() 
+        thead_exchange = Thread(target=self.exchange)
+        thead_exchange.start() 
 
         
 

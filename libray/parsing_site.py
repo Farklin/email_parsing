@@ -17,7 +17,12 @@ class ParsingSite:
 
     def __init__(self): 
         self.mas_sites = [] 
-        self.driver = webdriver.Chrome(ChromeDriverManager().install())
+        options = webdriver.ChromeOptions()
+        options.add_argument("--start-maximized")
+        options.add_experimental_option("excludeSwitches", ["enable-automation"])
+        options.add_experimental_option('useAutomationExtension', False)
+
+        self.driver = webdriver.Chrome(ChromeDriverManager().install(), chrome_options=options )
         self.mas_position = [] 
         self.driver.minimize_window() 
 
@@ -25,7 +30,7 @@ class ParsingSite:
     #сбор сайтов по всем фразам 10 страниц 
     def sbor(self, phraze):
         self.mas_sites = [] 
-        for page in range(0, 10): 
+        for page in range(0, 3): 
             self.sbor_page(phraze, page)
        
         return self.mas_sites 
@@ -35,7 +40,7 @@ class ParsingSite:
 
         self.driver.get('https://yandex.ru/search/?text='+str(phraze)+'&lr=213&p='+str(page))
                 
-        time.sleep(15)
+        time.sleep(10)
         bs = BeautifulSoup( self.driver.page_source, 'html.parser') 
 
         for val, vidacha in enumerate(bs.select('.Organic>.OrganicTitle>.Link ')): 

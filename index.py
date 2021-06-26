@@ -13,9 +13,9 @@ from controller.controllers import ControllerColectingSites, QueueSite, Controll
 # data_emails.write('ivanhel@yandex.ru', 'rost-seo.ru', '', '')
 # ExportExcel().export_emails() 
 
-# collecting =ControllerColectingSites()
-#collecting.set_phrazes(['спортивный магазин'])
-# collecting.start() 
+collecting =ControllerColectingSites([])
+collecting.set_phrazes(['спортивный магазин'])
+collecting.start() 
 
 # rows = ModelEmail().select("SELECT * FROM sites")
 # ModelEmail().query("UPDATE sites SET status ='start'")
@@ -23,5 +23,3 @@ from controller.controllers import ControllerColectingSites, QueueSite, Controll
 #     print(row[0], row[1])
 
 
-newcollection =ControllerColecting(['новая фраза'])
-newcollection.start()
