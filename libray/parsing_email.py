@@ -36,6 +36,7 @@ class ParsingEmail:
                                                     'source': self.url,
                                                     'domain': hostname })
                 r.close() 
+                
                 return self.result_email
             else: 
                 return [] 

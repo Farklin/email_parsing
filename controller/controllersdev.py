@@ -62,23 +62,26 @@ class ControllerColectingEmails:
 
     def queue(self): 
         while self.finished == False: 
-            # если очередь пустая ы
-            if self.site_queue.empty() and len(self.sites) > 0: 
+            
+            self.status_queue = self.site_queue.empty()
 
+            # если очередь пустая 
+            if self.site_queue.empty() and len(self.sites) > 0: 
+               
                 for site in self.sites: 
                     self.site_queue.put(site)
 
                 theards = [] 
                 for site in range(0, self.site_queue.qsize()): 
                     for t_number in range(0, 10): 
-                        
-                        theard = Thread(target=self.sbor_email, args=(self.site_queue.get(), ))
-                        theard.start()
-                        theards.append(theard)
+                        #если очередь пуста больше не создавть потоки 
+                        if not self.site_queue.empty():
+                            theard = Thread(target=self.sbor_email, args=(self.site_queue.get(), ))
+                            theard.start()
+                            theards.append(theard)
 
-                
-                for theard in theards: 
-                    theard.join(15) 
+                    for theard in theards: 
+                        theard.join(15) 
 
                 self.sites = [] 
                 print('обработано сайтов' + str(self.processed_site_count))
@@ -95,6 +98,6 @@ class ControllerColectingEmails:
         
     def start(self): 
         pass
-        #trhead_emails = Thread(target=self.parsing_emails)
-        #trhead_emails.start() 
+        trhead_emails = Thread(target=self.queue)
+        trhead_emails.start() 
 

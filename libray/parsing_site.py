@@ -33,6 +33,7 @@ class ParsingSite:
         for page in range(0, 3): 
             self.sbor_page(phraze, page)
        
+        self.driver.close()
         return self.mas_sites 
     
     #сбор страницы сайтов органической выдачи 
@@ -40,7 +41,7 @@ class ParsingSite:
 
         self.driver.get('https://yandex.ru/search/?text='+str(phraze)+'&lr=213&p='+str(page))
                 
-        time.sleep(10)
+        time.sleep(4)
         bs = BeautifulSoup( self.driver.page_source, 'html.parser') 
 
         for val, vidacha in enumerate(bs.select('.Organic>.OrganicTitle>.Link ')): 
@@ -53,5 +54,7 @@ class ParsingSite:
                 data_elem['status'] = 'start'
                 data_elem['date'] = date 
                 self.mas_sites.append(data_elem)
+        
+        
 
 
