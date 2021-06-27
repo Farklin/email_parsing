@@ -242,6 +242,74 @@ class ControllerColecting:
         
 
 
+class DevControllerColecting: 
+    
+    def __init__(self, phraze) -> None:
+        
+        #фразы для сбора сайтов 
+        self.phraze = phraze
+
+        self.ColectingSites = ControllerColectingSites(self.phraze)
+        self.ColectingEmails = ControllerColectingEmails() 
+
+        self.QueueEmail = QueueEmail() 
+        self.QueueSite = QueueSite() 
+
+        self.finished = False
+        
+    def exchange(self):
+        while self.finished == False: 
+            
+            print(len(self.ColectingEmails.site_update))
+
+            self.QueueSite.site_update += self.ColectingEmails.site_update
+            
+
+            if (len(self.ColectingEmails.site_queue) == 0): 
+                self.ColectingEmails.site_queue = self.QueueSite.site_queue
+                self.QueueSite.site_queue = [] 
+
+            if len(self.ColectingSites.save_site) != 0: 
+                self.QueueSite.site_save += self.ColectingSites.save_site
+                self.ColectingSites.save_site = []
+            
+            if len(self.QueueEmail.emails_save) == 0: 
+                self.QueueEmail.emails_save += self.ColectingEmails.save_emails
+                self.ColectingEmails.save_emails = [] 
+
+            sleep(10)
+
+        
+    def stop(self): 
+        self.QueueEmail.finished = True 
+        self.QueueSite.finished = True 
+
+        self.ColectingSites.finished = True 
+        self.ColectingEmails.finished = True 
+        
+        self.finished = True 
+
+
+
+    def start(self):
+                
+        self.ColectingSites.set_phrazes(self.phraze)
+        self.ColectingSites.start() 
+        self.ColectingEmails.start()
+
+        self.QueueSite.start()
+        self.QueueEmail.start() 
+        
+        thead_exchange = Thread(target=self.exchange)
+        thead_exchange.start() 
+
+        
+
+
+
+
+
+
 
 
 
