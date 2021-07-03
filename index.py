@@ -25,14 +25,10 @@ from controller.controllersdev import ControllerColectingEmails, ControllerColec
 
 
 site = ControllerColectingSites(['купить мороженное оптом', 'Купить брикет']) 
-email = ControllerColectingEmails()
+
 
 site.start()
-email.start()
 
-while True: 
-    if email.status_queue: 
-        email.sites = site.save_site
-        site.save_site = [] 
+
 
  
